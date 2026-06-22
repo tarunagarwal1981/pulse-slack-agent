@@ -1,0 +1,15 @@
+{
+  "name": "pulse-slack-agent",
+  "version": "0.1.0",
+  "description": "Pulse — a Slack agent that posts cited market-intelligence briefings into a channel.",
+  "type": "module",
+  "scripts": {
+    "start": "node app.js",
+    "dry-run": "node app.js --dry-run"
+  },
+  "dependencies": {
+    "@slack/bolt": "^4.2.0",
+    "@anthropic-ai/sdk": "^0.71.0",
+    "dotenv": "^16.4.7"
+  }
+}
