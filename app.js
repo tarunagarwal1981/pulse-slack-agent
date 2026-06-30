@@ -7,14 +7,31 @@
 //                       a briefing when someone runs /pulse or @-mentions the bot.
 
 import "dotenv/config";
-import { briefingAsText, briefingAsBlocks } from "./src/briefing.js";
+import { fetchBriefingItems, briefingAsText, briefingAsBlocks } from "./src/briefing.js";
 
 const isDryRun = process.argv.includes("--dry-run");
 
 if (isDryRun) {
   // ---- Local preview: no Slack connection, just print to the terminal. ----
-  console.log("\n" + briefingAsText("Anthropic, OpenAI") + "\n");
-  console.log("✅ Dry run complete. This is what Pulse will post into Slack.");
+  const topic = "Anthropic, OpenAI";
+  const { items, live, source, mcpServer, mcpToolUses } = await fetchBriefingItems(topic);
+  console.log("\n" + briefingAsText(topic, items) + "\n");
+  if (source === "mcp") {
+    console.log(
+      `✅ Dry run complete — retrieved via MCP server "${mcpServer}" ` +
+        `(${mcpToolUses} mcp_tool_use call${mcpToolUses === 1 ? "" : "s"}). ` +
+        `This is what Pulse will post into Slack.`,
+    );
+  } else if (source === "web_search") {
+    console.log(
+      "✅ Dry run complete (live web results via web_search fallback — set TAVILY_API_KEY " +
+        "in .env to retrieve via the MCP server instead).",
+    );
+  } else {
+    console.log(
+      "✅ Dry run complete (sample data — set ANTHROPIC_API_KEY in .env for live results).",
+    );
+  }
   process.exit(0);
 }
 
@@ -42,22 +59,24 @@ const app = new App({
 
 // Respond to the /pulse slash command.
 app.command("/pulse", async ({ command, ack, respond }) => {
-  await ack();
+  await ack(); // acknowledge within 3s; the briefing follows via response_url
   const topic = command.text?.trim() || "your tracked topics";
+  const { items } = await fetchBriefingItems(topic);
   await respond({
     response_type: "in_channel",
-    blocks: briefingAsBlocks(topic),
-    text: briefingAsText(topic), // fallback for notifications
+    blocks: briefingAsBlocks(topic, items),
+    text: briefingAsText(topic, items), // fallback for notifications
   });
 });
 
 // Respond when the bot is @-mentioned.
 app.event("app_mention", async ({ event, say }) => {
   const topic = "your tracked topics";
+  const { items } = await fetchBriefingItems(topic);
   await say({
     thread_ts: event.ts,
-    blocks: briefingAsBlocks(topic),
-    text: briefingAsText(topic),
+    blocks: briefingAsBlocks(topic, items),
+    text: briefingAsText(topic, items),
   });
 });
 

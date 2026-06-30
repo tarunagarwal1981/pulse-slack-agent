@@ -4,12 +4,21 @@ Pulse posts short, cited market/competitive briefings into a Slack channel.
 Built for the Slack Agent Builder Challenge, aimed at the Slack Marketplace.
 
 **How it works:** when someone runs `/pulse <topics>` or @-mentions the bot,
-Pulse searches the live web (Slack Real-Time Search API), asks Claude to
-summarize *what matters*, and posts a clean briefing back into the channel.
+Pulse retrieves recent news through a **search MCP server** (via the Anthropic
+MCP connector), asks Claude to summarize *what matters*, and posts a clean
+briefing back into the channel.
 
 ```
-Slack message  →  Pulse (this code)  →  [web search] + [Claude summary]  →  briefing posted to Slack
+Slack message  →  Pulse (this code)  →  [MCP search server] + [Claude summary]  →  briefing posted to Slack
 ```
+
+**MCP server integration (hackathon requirement):** Pulse satisfies the Slack
+Agent Builder Challenge rule "use at least one of {Slack AI, MCP server
+integration, Real-Time Search}" via **MCP**. When a search MCP server is
+configured (a free `TAVILY_API_KEY`, or any `MCP_SERVER_URL`), Pulse attaches it
+to the Claude call with the Messages API MCP connector and retrieves through it
+— the response contains `mcp_tool_use` blocks as proof. If no MCP server is
+configured it falls back to Claude's built-in web search so demos never break.
 
 ---
 
@@ -84,12 +93,12 @@ You should see a briefing appear.
 | File | What it does |
 |------|--------------|
 | `app.js` | Entry point. Dry-run preview, or connect to Slack and handle `/pulse` + @-mentions. |
-| `src/briefing.js` | Builds the briefing (sample data for now; live search wired in later). |
+| `src/briefing.js` | Retrieval (MCP server → web_search → sample) + Claude summary + Slack formatting. |
 | `.env.example` | Template for your secret keys. Copy to `.env`. |
 
 ## What's next (build roadmap)
 1. ✅ Repo + runnable skeleton with a sample briefing.
-2. ⬜ Wire `src/briefing.js` to the Slack Real-Time Search API for live results.
-3. ⬜ Add a Claude call to write the "why it matters" line from each result.
+2. ✅ Live retrieval via a search MCP server (Anthropic MCP connector), web_search fallback.
+3. ✅ Claude writes the "why it matters" line from each result.
 4. ⬜ Scheduled daily briefings to a channel.
 5. ⬜ Polish, demo video, Marketplace submission.
