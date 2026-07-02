@@ -57,27 +57,52 @@ const app = new App({
   socketMode: true,
 });
 
+const DEFAULT_TOPIC = "your tracked topics";
+
+// Shared path used by BOTH triggers so results stay consistent: fetch a live
+// briefing for the topic and build the Slack message payload (blocks + text).
+async function buildBriefing(topic) {
+  const cleanTopic = topic?.trim() || DEFAULT_TOPIC;
+  const { items } = await fetchBriefingItems(cleanTopic);
+  return {
+    blocks: briefingAsBlocks(cleanTopic, items),
+    text: briefingAsText(cleanTopic, items), // fallback for notifications
+  };
+}
+
 // Respond to the /pulse slash command.
 app.command("/pulse", async ({ command, ack, respond }) => {
   await ack(); // acknowledge within 3s; the briefing follows via response_url
-  const topic = command.text?.trim() || "your tracked topics";
-  const { items } = await fetchBriefingItems(topic);
-  await respond({
-    response_type: "in_channel",
-    blocks: briefingAsBlocks(topic, items),
-    text: briefingAsText(topic, items), // fallback for notifications
-  });
+  console.log(`[cmd] /pulse received, text="${command.text}"`);
+  try {
+    const briefing = await buildBriefing(command.text);
+    await respond({ response_type: "in_channel", ...briefing });
+    console.log("[cmd] briefing sent");
+  } catch (err) {
+    console.error("[cmd] handler error:", err);
+    await respond({ response_type: "ephemeral", text: `Pulse hit an error: ${err.message}` });
+  }
 });
 
-// Respond when the bot is @-mentioned.
+// Respond when the bot is @-mentioned — same live path as /pulse.
 app.event("app_mention", async ({ event, say }) => {
-  const topic = "your tracked topics";
-  const { items } = await fetchBriefingItems(topic);
-  await say({
-    thread_ts: event.ts,
-    blocks: briefingAsBlocks(topic, items),
-    text: briefingAsText(topic, items),
-  });
+  console.log(`[mention] received, text="${event.text}"`);
+  try {
+    // event.text is like "<@U123ABC> Tesla, Rivian" — strip the mention(s) to
+    // get the topic the user actually typed.
+    const topic = event.text.replace(/<@[^>]+>/g, "").trim();
+    const briefing = await buildBriefing(topic);
+    await say({ thread_ts: event.ts, ...briefing });
+    console.log("[mention] briefing sent");
+  } catch (err) {
+    console.error("[mention] handler error:", err);
+    await say({ thread_ts: event.ts, text: `Pulse hit an error: ${err.message}` });
+  }
+});
+
+// Catch anything the per-handler try/catch misses (e.g. framework-level errors).
+app.error(async (error) => {
+  console.error("[app.error]", error);
 });
 
 (async () => {

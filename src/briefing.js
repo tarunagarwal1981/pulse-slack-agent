@@ -28,8 +28,10 @@ const MCP_BETA = "mcp-client-2025-11-20";
 
 // The MCP connector runs the whole search loop server-side in one call, so cap
 // both the model's search count (prompt) and the wall-clock per request.
-const MAX_SEARCHES = 2;
-const REQUEST_TIMEOUT_MS = 70000;
+// maxRetries is set to 0 on the client below: the SDK retries timeouts by
+// default, which would multiply this wall-clock by 3 before failing over.
+const MAX_SEARCHES = 1;
+const REQUEST_TIMEOUT_MS = 45000;
 
 /**
  * Resolves the search MCP server to attach to the Claude call, or null if none
@@ -92,18 +94,20 @@ export async function fetchBriefingItems(topic) {
     return { items: sampleItems, live: false, source: "sample", mcpServer: null, mcpToolUses: 0 };
   }
 
-  const client = new Anthropic(); // reads ANTHROPIC_API_KEY from env
+  // maxRetries: 0 — don't let the SDK retry timeouts (that tripled wall-clock
+  // to ~3.5 min before failing over). We handle failure via the fallback below.
+  const client = new Anthropic({ maxRetries: 0 }); // reads ANTHROPIC_API_KEY from env
   const mcp = resolveMcpServer();
 
   const system =
-    "You are a market-intelligence analyst. Use the available search tool to find the " +
-    "most important and recent news for the user's topics. Prefer reputable, primary " +
-    `sources from the last few weeks. Make AT MOST ${MAX_SEARCHES} searches total, then ` +
-    "stop searching and answer from what you found.";
+    "You are a market-intelligence analyst. Make exactly ONE search that covers all of " +
+    "the user's topics at once (e.g. search all topic names together), then STOP searching " +
+    "and answer from those results. Do not run a separate search per topic. Prefer " +
+    "reputable, primary sources from the last few weeks.";
 
   const prompt =
     `Find the most important recent news about: ${topic}.\n\n` +
-    `Make at most ${MAX_SEARCHES} searches, then ` +
+    `Run ONE combined search for all of those topics, then ` +
     `return ONLY a JSON array (no prose, no markdown code fences) of at most ${MAX_ITEMS} ` +
     `items, ordered by importance. Each item must be an object with exactly these keys:\n` +
     `  "headline": a short title (max ~12 words)\n` +
