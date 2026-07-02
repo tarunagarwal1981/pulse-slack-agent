@@ -109,7 +109,8 @@ export async function fetchBriefingItems(topic) {
     `Find the most important recent news about: ${topic}.\n\n` +
     `Run ONE combined search for all of those topics, then ` +
     `return ONLY a JSON array (no prose, no markdown code fences) of at most ${MAX_ITEMS} ` +
-    `items, ordered by importance. Each item must be an object with exactly these keys:\n` +
+    `items, ordered by importance. Spread coverage across all the topics rather than ` +
+    `clustering on one, and skip near-duplicate stories. Each item must be an object with exactly these keys:\n` +
     `  "headline": a short title (max ~12 words)\n` +
     `  "url": the source URL\n` +
     `  "source": the publication or site name\n` +

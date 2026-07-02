@@ -73,29 +73,25 @@ async function buildBriefing(topic) {
 // Respond to the /pulse slash command.
 app.command("/pulse", async ({ command, ack, respond }) => {
   await ack(); // acknowledge within 3s; the briefing follows via response_url
-  console.log(`[cmd] /pulse received, text="${command.text}"`);
   try {
     const briefing = await buildBriefing(command.text);
     await respond({ response_type: "in_channel", ...briefing });
-    console.log("[cmd] briefing sent");
   } catch (err) {
-    console.error("[cmd] handler error:", err);
+    console.error("/pulse handler error:", err);
     await respond({ response_type: "ephemeral", text: `Pulse hit an error: ${err.message}` });
   }
 });
 
 // Respond when the bot is @-mentioned — same live path as /pulse.
 app.event("app_mention", async ({ event, say }) => {
-  console.log(`[mention] received, text="${event.text}"`);
   try {
     // event.text is like "<@U123ABC> Tesla, Rivian" — strip the mention(s) to
     // get the topic the user actually typed.
     const topic = event.text.replace(/<@[^>]+>/g, "").trim();
     const briefing = await buildBriefing(topic);
     await say({ thread_ts: event.ts, ...briefing });
-    console.log("[mention] briefing sent");
   } catch (err) {
-    console.error("[mention] handler error:", err);
+    console.error("app_mention handler error:", err);
     await say({ thread_ts: event.ts, text: `Pulse hit an error: ${err.message}` });
   }
 });

@@ -1,0 +1,56 @@
+<svg width="720" height="470" viewBox="0 0 720 470" xmlns="http://www.w3.org/2000/svg" font-family="-apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif">
+  <style>
+    .headline { font-size: 15px; font-weight: 700; fill: #1264a3; }
+    .body { font-size: 14px; fill: #1d1c1d; }
+    .muted { font-size: 12.5px; fill: #616061; }
+    .title { font-size: 16px; font-weight: 700; fill: #1d1c1d; }
+    .app  { font-size: 14px; font-weight: 700; fill: #1d1c1d; }
+    .tag  { font-size: 10px; font-weight: 700; fill: #ffffff; }
+  </style>
+
+  <!-- card -->
+  <rect x="0.5" y="0.5" width="719" height="469" rx="10" fill="#ffffff" stroke="#e4e4e4"/>
+
+  <!-- app avatar -->
+  <rect x="20" y="20" width="36" height="36" rx="8" fill="#611f69"/>
+  <text x="38" y="44" text-anchor="middle" font-size="20">📊</text>
+
+  <!-- app name + tag + time -->
+  <text x="66" y="34" class="app">Pulse</text>
+  <rect x="112" y="23" width="34" height="15" rx="3" fill="#616061"/>
+  <text x="129" y="34" text-anchor="middle" class="tag">APP</text>
+  <text x="156" y="34" class="muted">10:02 AM</text>
+
+  <!-- header -->
+  <text x="66" y="62" class="title">📊 Pulse Briefing — Nvidia, AMD</text>
+  <line x1="66" y1="76" x2="694" y2="76" stroke="#e4e4e4"/>
+
+  <!-- item 1 -->
+  <text x="66" y="102" class="headline">Nvidia unveils next-gen data-center GPU, raises guidance</text>
+  <text x="66" y="122" class="body">Signals AI-compute demand is still accelerating — pressures rivals on roadmap and pricing.</text>
+  <text x="66" y="140" class="muted">Reuters</text>
+
+  <!-- item 2 -->
+  <text x="66" y="176" class="headline">AMD lands major cloud contract for MI-series accelerators</text>
+  <text x="66" y="196" class="body">First big design win against Nvidia at scale — validates AMD as a credible second source.</text>
+  <text x="66" y="214" class="muted">Bloomberg</text>
+
+  <!-- item 3 -->
+  <text x="66" y="250" class="headline">US updates export rules on advanced AI chips</text>
+  <text x="66" y="270" class="body">Could reshape both firms' China revenue — watch for revised guidance next quarter.</text>
+  <text x="66" y="288" class="muted">CNBC</text>
+
+  <!-- item 4 -->
+  <text x="66" y="324" class="headline">Nvidia expands software stack to lock in developers</text>
+  <text x="66" y="344" class="body">Moat is shifting from silicon to software — raises switching costs for the whole ecosystem.</text>
+  <text x="66" y="362" class="muted">The Verge</text>
+
+  <!-- item 5 -->
+  <text x="66" y="398" class="headline">AMD earnings beat on data-center strength</text>
+  <text x="66" y="418" class="body">Data-center segment now the growth engine — the AI bet is showing up in the numbers.</text>
+  <text x="66" y="436" class="muted">CNBC</text>
+
+  <!-- footer -->
+  <line x1="66" y1="450" x2="694" y2="450" stroke="#f0f0f0"/>
+  <text x="66" y="464" class="muted">Pulse · live web results via MCP server (Tavily)</text>
+</svg>

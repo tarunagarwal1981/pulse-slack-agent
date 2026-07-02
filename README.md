@@ -3,6 +3,10 @@
 Pulse posts short, cited market/competitive briefings into a Slack channel.
 Built for the Slack Agent Builder Challenge, aimed at the Slack Marketplace.
 
+![Example Pulse briefing posted in Slack](docs/briefing-example.svg)
+
+*Example: `/pulse Nvidia, AMD` → a cited briefing posted in the channel (illustrative).*
+
 **How it works:** when someone runs `/pulse <topics>` or @-mentions the bot,
 Pulse retrieves recent news through a **search MCP server** (via the Anthropic
 MCP connector), asks Claude to summarize *what matters*, and posts a clean
