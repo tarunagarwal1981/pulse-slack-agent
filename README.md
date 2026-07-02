@@ -1,7 +1,7 @@
 # Pulse — a Slack market-intelligence agent
 
 Pulse posts short, cited market/competitive briefings into a Slack channel.
-Built for the Slack Agent Builder Challenge, aimed at the Slack Marketplace.
+Built for the Slack Agent Builder Challenge.
 
 ![Example Pulse briefing posted in Slack](docs/briefing-example.svg)
 
@@ -13,96 +13,95 @@ MCP connector), asks Claude to summarize *what matters*, and posts a clean
 briefing back into the channel.
 
 ```
-Slack message  →  Pulse (this code)  →  [MCP search server] + [Claude summary]  →  briefing posted to Slack
+Slack message  →  Pulse  →  [MCP search server] + [Claude summary]  →  briefing posted to Slack
 ```
 
-**MCP server integration (hackathon requirement):** Pulse satisfies the Slack
-Agent Builder Challenge rule "use at least one of {Slack AI, MCP server
+Change the topics and the same agent adapts to any vertical — tech, shipping,
+healthcare, finance, policy.
+
+## MCP server integration
+
+Pulse satisfies the challenge rule "use at least one of {Slack AI, MCP server
 integration, Real-Time Search}" via **MCP**. When a search MCP server is
 configured (a free `TAVILY_API_KEY`, or any `MCP_SERVER_URL`), Pulse attaches it
-to the Claude call with the Messages API MCP connector and retrieves through it
-— the response contains `mcp_tool_use` blocks as proof. If no MCP server is
-configured it falls back to Claude's built-in web search so demos never break.
+to the Claude call with the Messages API MCP connector and retrieves through it —
+the response contains `mcp_tool_use` blocks as proof. If no MCP server is
+configured it falls back to Claude's built-in web search, then to sample data, so
+it never hard-fails.
 
----
+The `--dry-run` mode prints which path ran, e.g.
+`retrieved via MCP server "tavily" (2 mcp_tool_use calls)`.
 
-## See it work right now (no setup, no accounts)
+## Quick start (no accounts needed)
 
 ```bash
 npm install
 npm run dry-run
 ```
 
-This prints a sample briefing to your terminal — the exact thing Pulse will
-post into Slack. Nothing here calls Slack or Claude yet; it's just to see the
-shape of the output.
+This prints a briefing to the terminal — the exact content Pulse posts into
+Slack. With `ANTHROPIC_API_KEY` + `TAVILY_API_KEY` set it runs live via MCP;
+with no keys it prints sample data.
 
----
+## Configuration
 
-## Connecting it to a real Slack workspace
+Copy `.env.example` to `.env` and fill in:
 
-This is the part **you** do once (it needs accounts that only you can create).
-Take it slow — each step is a few clicks.
+| Variable | Purpose | Required for |
+|----------|---------|--------------|
+| `ANTHROPIC_API_KEY` | Claude summaries (and web-search fallback) | Live briefings |
+| `TAVILY_API_KEY` | Turns on MCP retrieval (Tavily's remote MCP server) | MCP path |
+| `SLACK_BOT_TOKEN` | Post messages (`xoxb-…`) | Running in Slack |
+| `SLACK_APP_TOKEN` | Socket Mode connection (`xapp-…`) | Running in Slack |
+| `SLACK_SIGNING_SECRET` | Request verification | Running in Slack |
 
-### 1. Create a Slack workspace to test in
-Go to https://slack.com/get-started and make a free workspace (e.g. "Pulse Dev").
-This is your private sandbox.
+`MCP_SERVER_URL` / `MCP_SERVER_NAME` optionally point Pulse at any other remote
+(URL-based) search MCP server instead of Tavily.
 
-### 2. Create a Slack app
-- Go to https://api.slack.com/apps → **Create New App** → **From scratch**.
-- Name it "Pulse", pick your sandbox workspace.
+## Running in Slack
 
-### 3. Turn on Socket Mode
-- Left sidebar → **Socket Mode** → toggle **Enable Socket Mode** on.
-- When prompted, create an **App-Level Token** with the `connections:write`
-  scope. Copy it — this is your `SLACK_APP_TOKEN` (starts with `xapp-`).
+Pulse uses **Socket Mode**, so it needs no public URL. One-time Slack app setup:
 
-### 4. Add a slash command
-- Left sidebar → **Slash Commands** → **Create New Command**.
-- Command: `/pulse`  ·  Description: "Get a market briefing"  ·  Usage hint: `Anthropic, OpenAI`
-- (With Socket Mode on, you can leave the Request URL blank.)
+1. Create a Slack app at https://api.slack.com/apps → **Create New App** →
+   **From scratch**, in a workspace you can install apps to.
+2. **Socket Mode** → enable it, and create an App-Level Token with the
+   `connections:write` scope → this is `SLACK_APP_TOKEN` (`xapp-…`).
+3. **Slash Commands** → create `/pulse` (usage hint: `Anthropic, OpenAI`). With
+   Socket Mode on, leave the Request URL blank.
+4. **OAuth & Permissions** → add Bot Token Scopes: `commands`, `chat:write`,
+   `app_mentions:read`.
+5. **Event Subscriptions** → enable, and subscribe to the bot event
+   `app_mention`.
+6. **Install App** → Install to Workspace. Copy the Bot User OAuth Token
+   (`xoxb-…`) into `SLACK_BOT_TOKEN`, and the Signing Secret from **Basic
+   Information** into `SLACK_SIGNING_SECRET`.
 
-### 5. Add bot permissions
-- Left sidebar → **OAuth & Permissions** → **Scopes** → **Bot Token Scopes**, add:
-  - `commands` (for the slash command)
-  - `chat:write` (to post messages)
-  - `app_mentions:read` (to hear @-mentions)
+Then:
 
-### 6. Subscribe to the mention event
-- Left sidebar → **Event Subscriptions** → toggle on → under **Subscribe to bot events**
-  add `app_mention`. Save.
-
-### 7. Install the app to your workspace
-- Left sidebar → **Install App** → **Install to Workspace** → Allow.
-- Copy the **Bot User OAuth Token** (starts with `xoxb-`) → this is `SLACK_BOT_TOKEN`.
-- The **Signing Secret** is on **Basic Information** → `SLACK_SIGNING_SECRET`.
-
-### 8. Fill in your keys
-```bash
-cp .env.example .env
-# open .env and paste in the three SLACK_ values
-```
-
-### 9. Run it
 ```bash
 npm start
 ```
-In Slack, invite the bot to a channel (`/invite @Pulse`), then type `/pulse Tesla, Rivian`.
-You should see a briefing appear.
 
----
+In Slack, invite the bot to a channel (`/invite @Pulse`) and run
+`/pulse Tesla, Rivian`, or `@Pulse Tesla, Rivian` to get a threaded reply.
 
 ## Project layout
 
 | File | What it does |
 |------|--------------|
-| `app.js` | Entry point. Dry-run preview, or connect to Slack and handle `/pulse` + @-mentions. |
-| `src/briefing.js` | Retrieval (MCP server → web_search → sample) + Claude summary + Slack formatting. |
-| `.env.example` | Template for your secret keys. Copy to `.env`. |
+| `app.js` | Entry point: `--dry-run` preview, or connect to Slack and handle `/pulse` + `app_mention`. Both triggers share one code path. |
+| `src/briefing.js` | Retrieval (MCP server → web search → sample), Claude summary, and Slack Block Kit formatting. |
+| `.env.example` | Template for keys. Copy to `.env`. |
 
-## What's next (build roadmap)
-1. ✅ Repo + runnable skeleton with a sample briefing.
-2. ✅ Live retrieval via a search MCP server (Anthropic MCP connector), web_search fallback.
-3. ✅ Claude writes the "why it matters" line from each result.
-4. ⬜ Scheduled daily briefings to a channel.
-5. ⬜ Polish, demo video, Marketplace submission.
+## Tech stack
+
+Slack Bolt (Socket Mode) · Anthropic Claude (`claude-haiku-4-5`) · Messages API
+MCP connector · Tavily MCP server · Node.js.
+
+## Roadmap
+
+- [x] Live retrieval via a search MCP server (Anthropic MCP connector), with fallback
+- [x] Claude-written "why it matters" per item, cited
+- [ ] Scheduled daily briefings to a channel
+- [ ] Saved per-workspace topic lists, de-duplicated across days
+- [ ] Slack Marketplace listing
