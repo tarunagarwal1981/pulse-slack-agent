@@ -122,6 +122,9 @@ export async function fetchBriefingItems(topic) {
     try {
       response = await runWithMcp(client, system, prompt, mcp);
       usedMcp = true;
+      console.log(
+        `[mcp] retrieved via Tavily MCP server (${countMcpToolUses(response)} mcp_tool_use calls)`,
+      );
     } catch (err) {
       console.error(
         `MCP retrieval via "${mcp.name}" failed (${err.message}); falling back to web_search.`,

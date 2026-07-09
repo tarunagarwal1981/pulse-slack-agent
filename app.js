@@ -73,6 +73,7 @@ async function buildBriefing(topic) {
 // Respond to the /pulse slash command.
 app.command("/pulse", async ({ command, ack, respond }) => {
   await ack(); // acknowledge within 3s; the briefing follows via response_url
+  console.log(`[cmd] /pulse fired, topics="${command.text?.trim() || ""}"`);
   try {
     const briefing = await buildBriefing(command.text);
     await respond({ response_type: "in_channel", ...briefing });
@@ -88,6 +89,7 @@ app.event("app_mention", async ({ event, say }) => {
     // event.text is like "<@U123ABC> Tesla, Rivian" — strip the mention(s) to
     // get the topic the user actually typed.
     const topic = event.text.replace(/<@[^>]+>/g, "").trim();
+    console.log(`[mention] fired, topics="${topic}"`);
     const briefing = await buildBriefing(topic);
     await say({ thread_ts: event.ts, ...briefing });
   } catch (err) {
@@ -104,4 +106,14 @@ app.error(async (error) => {
 (async () => {
   await app.start();
   console.log("⚡️ Pulse is running and connected to Slack (Socket Mode).");
+
+  // Socket Mode needs no inbound port, but most hosts expect a process to bind
+  // $PORT. When deployed, expose a tiny health endpoint so the platform sees a
+  // live service (and you get an "is it up?" URL). Skipped for local dev.
+  if (process.env.PORT) {
+    const http = await import("node:http");
+    http
+      .createServer((_req, res) => res.end("Pulse OK"))
+      .listen(process.env.PORT, () => console.log(`Health server on :${process.env.PORT}`));
+  }
 })();

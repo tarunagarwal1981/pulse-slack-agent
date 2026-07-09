@@ -1,7 +1,8 @@
 # Pulse — Devpost Submission Copy
 
-Paste these into the matching Devpost fields. Track: **Slack Agent for
-Organizations** (Marketplace-oriented), also valid as **New Slack Agent**.
+Paste these into the matching Devpost fields. Track: **New Slack Agent**.
+(A Slack Marketplace listing is on the roadmap but is intentionally *not* part of
+this entry — the New Slack Agent track doesn't require it.)
 
 ---
 
