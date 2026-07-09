@@ -32,6 +32,10 @@ it never hard-fails.
 The `--dry-run` mode prints which path ran, e.g.
 `retrieved via MCP server "tavily" (2 mcp_tool_use calls)`.
 
+## Architecture
+
+![Pulse architecture](docs/architecture.svg)
+
 ## Quick start (no accounts needed)
 
 ```bash

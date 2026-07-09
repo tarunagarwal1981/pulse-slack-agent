@@ -1,0 +1,86 @@
+<svg width="860" height="440" viewBox="0 0 860 440" xmlns="http://www.w3.org/2000/svg" font-family="-apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif">
+  <style>
+    .box   { fill: #ffffff; stroke: #c9c9c9; }
+    .slack { fill: #f4ecf7; stroke: #a97bbd; }
+    .anthropic { fill: #fdf1e7; stroke: #d99a5c; }
+    .mcp   { fill: #e9f3ec; stroke: #5aa26f; }
+    .title { font-size: 14px; font-weight: 700; fill: #1d1c1d; }
+    .sub   { font-size: 11.5px; fill: #555; }
+    .lbl   { font-size: 11px; fill: #444; }
+    .flow  { font-size: 12px; font-weight: 600; fill: #1264a3; }
+    .note  { font-size: 11px; fill: #777; }
+    .arrow { stroke: #8a8a8a; stroke-width: 1.6; fill: none; marker-end: url(#ah); }
+  </style>
+  <defs>
+    <marker id="ah" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto" markerUnits="strokeWidth">
+      <path d="M0,0 L7,3 L0,6 Z" fill="#8a8a8a"/>
+    </marker>
+  </defs>
+
+  <text x="24" y="30" class="title" font-size="16">Pulse — architecture</text>
+
+  <!-- Stage 1: Slack user -->
+  <rect x="24" y="70" width="180" height="96" rx="10" class="slack"/>
+  <text x="114" y="98" text-anchor="middle" class="title">Slack workspace</text>
+  <text x="114" y="120" text-anchor="middle" class="sub">User runs</text>
+  <text x="114" y="138" text-anchor="middle" class="sub">/pulse Nvidia, AMD</text>
+  <text x="114" y="154" text-anchor="middle" class="sub">or @Pulse Nvidia, AMD</text>
+
+  <!-- Stage 2: Pulse app -->
+  <rect x="256" y="52" width="200" height="132" rx="10" class="box"/>
+  <text x="356" y="78" text-anchor="middle" class="title">Pulse (Node · Bolt)</text>
+  <text x="356" y="98" text-anchor="middle" class="sub">Socket Mode — no public URL</text>
+  <line x1="272" y1="108" x2="440" y2="108" stroke="#e4e4e4"/>
+  <text x="356" y="126" text-anchor="middle" class="lbl">1. parse topic (both triggers</text>
+  <text x="356" y="141" text-anchor="middle" class="lbl">share one path)</text>
+  <text x="356" y="160" text-anchor="middle" class="lbl">2. request briefing</text>
+  <text x="356" y="175" text-anchor="middle" class="lbl">3. format Block Kit → post back</text>
+
+  <!-- Stage 3: Anthropic -->
+  <rect x="508" y="52" width="196" height="132" rx="10" class="anthropic"/>
+  <text x="606" y="78" text-anchor="middle" class="title">Claude (Haiku)</text>
+  <text x="606" y="97" text-anchor="middle" class="sub">Messages API</text>
+  <line x1="524" y1="107" x2="688" y2="107" stroke="#efe0cf"/>
+  <text x="606" y="126" text-anchor="middle" class="lbl">MCP connector attaches</text>
+  <text x="606" y="141" text-anchor="middle" class="lbl">the search MCP server;</text>
+  <text x="606" y="156" text-anchor="middle" class="lbl">summarizes "why it</text>
+  <text x="606" y="171" text-anchor="middle" class="lbl">matters" per item</text>
+
+  <!-- Stage 4: MCP server -->
+  <rect x="508" y="228" width="196" height="92" rx="10" class="mcp"/>
+  <text x="606" y="256" text-anchor="middle" class="title">Search MCP server</text>
+  <text x="606" y="276" text-anchor="middle" class="sub">Tavily (remote MCP)</text>
+  <text x="606" y="298" text-anchor="middle" class="lbl">live web news →</text>
+  <text x="606" y="313" text-anchor="middle" class="lbl">mcp_tool_use / result</text>
+
+  <!-- arrows -->
+  <path class="arrow" d="M204,118 L252,118"/>
+  <text x="228" y="110" text-anchor="middle" class="flow">event</text>
+
+  <path class="arrow" d="M456,118 L504,118"/>
+  <text x="480" y="110" text-anchor="middle" class="flow">API call</text>
+
+  <path class="arrow" d="M606,184 L606,224"/>
+  <text x="648" y="208" text-anchor="middle" class="flow">MCP</text>
+
+  <path class="arrow" d="M556,224 L556,190"/>
+  <text x="512" y="208" text-anchor="middle" class="note">results</text>
+
+  <!-- return arrow Anthropic -> Pulse -->
+  <path class="arrow" d="M508,150 L460,150"/>
+  <text x="484" y="167" text-anchor="middle" class="note">briefing JSON</text>
+
+  <!-- return arrow Pulse -> Slack -->
+  <path class="arrow" d="M256,150 L206,150"/>
+  <text x="230" y="167" text-anchor="middle" class="note">post</text>
+
+  <!-- fallback note -->
+  <rect x="24" y="228" width="432" height="92" rx="10" fill="#fafafa" stroke="#e4e4e4"/>
+  <text x="40" y="252" class="title" font-size="13">Retrieval fallback chain</text>
+  <text x="40" y="274" class="lbl">1. MCP server (Tavily)   — primary; proven via mcp_tool_use blocks</text>
+  <text x="40" y="292" class="lbl">2. Claude built-in web search   — if no MCP server configured / on error</text>
+  <text x="40" y="310" class="lbl">3. Sample data   — if no API key (keeps --dry-run working)</text>
+
+  <text x="24" y="360" class="note">Model: claude-haiku-4-5 · one combined search, 45s timeout, no SDK retries · ~11s end-to-end</text>
+  <text x="24" y="380" class="note">Secrets in .env (gitignored): ANTHROPIC_API_KEY, TAVILY_API_KEY, SLACK_BOT_TOKEN, SLACK_APP_TOKEN, SLACK_SIGNING_SECRET</text>
+</svg>
